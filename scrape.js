@@ -58,14 +58,13 @@ request('http://5e.d20srd.org/srd/magicItems/magicItemsAToZ.htm', function(error
                 finalJson.push(currentItem);
                 currentItem = [];
             }
+            e.type = e.children[0].attributes.name;
             currentItem = e;
             started = true;
 
         }else{
 
-            if(e.tagName == 'h3'){
-                e.type = 'itemName';
-            } else if(e.tagName == 'p'){
+            if(e.tagName == 'p'){
                 e.type = "desc";           
             } else if(e.tagName == 'table'){
                 e.type = 'table';
