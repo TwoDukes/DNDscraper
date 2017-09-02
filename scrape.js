@@ -115,10 +115,10 @@ for(let i = 0; i < urls.length; i++){
                     if(child.tagName == 'p'){
                         if(child.children[0].type == "Element"){
                             if(child.children[0].children[0] != undefined)
-                                currentItem.desc += child.children[0].children[0].content;
+                                currentItem.desc += (" " + child.children[0].children[0].content);
                         }else if(child.children[0].type == "Text"){
                             if(child.children[0] != undefined)
-                                currentItem.desc += child.children[0].content;
+                                currentItem.desc += (" " + child.children[0].content);
                         }
                     
         
