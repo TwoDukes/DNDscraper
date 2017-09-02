@@ -9,7 +9,8 @@ const filePath = '/home/dustin/Documents/node/projects/scraping/DNDscraper/data/
 
 let urls = [
     'http://5e.d20srd.org/srd/magicItems/magicItemsAToZ.htm',
-    'http://5e.d20srd.org/srd/equipment/equipment.htm'
+    'http://5e.d20srd.org/srd/equipment/equipment.htm',
+    'http://5e.d20srd.org/srd/equipment/armor.htm'
 ];
 
 for(let i = 0; i < urls.length; i++){
@@ -22,8 +23,16 @@ for(let i = 0; i < urls.length; i++){
         }
         const html = body;
 
+        
         const fullHTMLJson = himalaya.parse(html);
-        const bodyJson = fullHTMLJson[3].children[1].children[3].children;
+        //console.log(fullHTMLJson);
+        
+        let bodyJson;
+        fullHTMLJson.forEach(e => {
+            if(e.tagName == '?xml' && e.attributes.version == 1){
+                    bodyJson =  e.children[1].children[3].children;
+            }
+        })
 
         let jsonObj = [];
         let tempObj = [];
@@ -43,6 +52,7 @@ for(let i = 0; i < urls.length; i++){
                 tempObj.push(e);
             } 
         });
+        //jsonObj.push(tempObj);
         
         let filteredJson = []
         
@@ -53,7 +63,7 @@ for(let i = 0; i < urls.length; i++){
             });
         });
 
-        let finalJson = [];
+        let firstArrangedJson = [];
         let currentItem = {};
         started = false;
 
@@ -64,7 +74,7 @@ for(let i = 0; i < urls.length; i++){
             //header to the finalJson object
             if(e.tagName == 'h3'){
                 if(started){
-                    finalJson.push(currentItem);
+                    firstArrangedJson.push(currentItem);
                     currentItem = [];
                 }
                 e.type = e.children[0].attributes.name;
@@ -84,9 +94,50 @@ for(let i = 0; i < urls.length; i++){
                 currentItem.children.push(e);            
             }
         })
+        firstArrangedJson.push(currentItem);
+
+        let finalArrangedJson = [];
+        currentItem = {};
+        started = false;
+
+        firstArrangedJson.forEach(e => {
+            if(e.tagName == 'h3'){
+                if(started){
+                    finalArrangedJson.push(currentItem);
+                    currentItem = {};
+                }
+                currentItem.name = e.type;
+                currentItem.desc = '';
+                currentItem.data = [];
+                started = true;
+
+                e.children.forEach(child => {
+                    if(child.tagName == 'p'){
+                        if(child.children[0].type == "Element"){
+                            if(child.children[0].children[0] != undefined)
+                                currentItem.desc += child.children[0].children[0].content;
+                        }else if(child.children[0].type == "Text"){
+                            if(child.children[0] != undefined)
+                                currentItem.desc += child.children[0].content;
+                        }
+                    
+        
+                    } else {
+                        if(child.content != "\n\n" && child.tagName != 'a'){
+                            if(child.tagName == 'table' || child.tagName == 'ul' || child.tagName == 'h5' || child.tagName == 'h1'){
+                                currentItem.data.push(toHTML(child));
+                            }else {
+                                currentItem.data.push(child);
+                            }
+                        }
+                    }
+                }) 
+            } 
+        });
+        finalArrangedJson.push(currentItem);
         
         
-        fs.writeFileSync(filePath +`${i}.json`, JSON.stringify(finalJson, null, ' ') , 'utf-8'); 
+        fs.writeFileSync(filePath +`${i}.json`, JSON.stringify(finalArrangedJson, null, ' ') , 'utf-8'); 
         
         console.log(`succesfully scraped url ${i}`);
     });
