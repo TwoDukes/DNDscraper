@@ -25,8 +25,8 @@ for(let i = 0; i < urls.length; i++){
 
         
         const fullHTMLJson = himalaya.parse(html);
-        //console.log(fullHTMLJson);
-        
+
+        //find and set body of the html document
         let bodyJson;
         fullHTMLJson.forEach(e => {
             if(e.tagName == '?xml' && e.attributes.version == 1){
@@ -100,6 +100,8 @@ for(let i = 0; i < urls.length; i++){
         currentItem = {};
         started = false;
 
+
+        //format all json data into an easily usable and accesible json object
         firstArrangedJson.forEach(e => {
             if(e.tagName == 'h3'){
                 if(started){
@@ -136,7 +138,7 @@ for(let i = 0; i < urls.length; i++){
         });
         finalArrangedJson.push(currentItem);
         
-        
+        //write json to external file
         fs.writeFileSync(filePath +`${i}.json`, JSON.stringify(finalArrangedJson, null, ' ') , 'utf-8'); 
         
         console.log(`succesfully scraped url ${i}`);
